@@ -225,7 +225,7 @@ int alazarCapture( int preTriggerSamples,
         boardHandle, // HANDLE -- board handle
         CHANNEL_B, // U8 -- input channel
         AC_COUPLING, // U32 -- input coupling id
-        INPUT_RANGE_PM_100_MV, // U32 -- input range id
+        INPUT_RANGE_PM_200_MV, // U32 -- input range id
         IMPEDANCE_50_OHM // U32 -- input impedance id
     );
 
@@ -356,6 +356,7 @@ int alazarCapture( int preTriggerSamples,
     
     // Create a data file if required
     FILE* fpData = NULL;
+    FILE* fpDataIQ = NULL;
 
 
     if (save) {
@@ -366,6 +367,14 @@ int alazarCapture( int preTriggerSamples,
         {
             snprintf(errorMessage, 80, "Error: Unable to create data file -- %u\n", GetLastError());
             return -13;
+        }
+
+
+        fpDataIQ = fopen("dataIQ.csv", "w");
+        if (fpData == NULL)
+        {
+            snprintf(errorMessage, 80, "Error: Unable to create data IQ file -- %u\n", GetLastError());
+            return -113;
         }
     }
 
@@ -468,6 +477,10 @@ int alazarCapture( int preTriggerSamples,
     // the board.
     if (success)
     {
+        if (save) {
+            fprintf(fpDataIQ, "I,Q\n");
+        }
+
         //printf("Capturing %d buffers ... press any key to abort\n", buffersPerAcquisition);
 
         U32 startTickCount = GetTickCount();
@@ -500,6 +513,8 @@ int alazarCapture( int preTriggerSamples,
 
                 buffersCompleted++;
                 bytesTransferred += bytesPerBuffer;
+
+
 
                 // TODO: POSSIBLES PROBLEMS
                 for (int i = 0; i < bytesPerBuffer; i++) {
@@ -548,6 +563,8 @@ int alazarCapture( int preTriggerSamples,
                 }
             }
 
+
+
             if (success) {
 
                 // TODO: POSSIBLES PROBLEMS
@@ -562,6 +579,11 @@ int alazarCapture( int preTriggerSamples,
                     GetCosFromSin(rawSin, period, rawCos, waveformHeadCut, samplesPerRecord, &Headpointer, &Tailpointer);
 
                     GetIQ(rawSin, rawCos, signal, Headpointer, Tailpointer, &I, &Q);
+
+                    /*Saving I and Q as .csv file*/
+                    if (save) {
+                        fprintf(fpDataIQ, "%f,%f\n", I, Q);
+                    }
 
 
                     *returnI += I / averagesDone;
@@ -628,6 +650,9 @@ int alazarCapture( int preTriggerSamples,
 
     if (fpData != NULL)
         fclose(fpData);
+
+    if (fpDataIQ != NULL)
+        fclose(fpDataIQ);
 
     viClose(viDelayGenerator);
     viClose(RM);
