@@ -105,9 +105,6 @@ int alazarCapture( int preTriggerSamples,
     RETURN_CODE retCode;
     int returnCodeAlazarCapture = 0;
 
-    ViSession RM;
-    ViSession viDelayGenerator;
-    ViStatus err;
 
     snprintf(errorMessage, 80, "NO ERROR");
 
