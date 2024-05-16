@@ -111,17 +111,6 @@ int alazarCapture( int preTriggerSamples,
 
     snprintf(errorMessage, 80, "NO ERROR");
 
-    err = viOpenDefaultRM(&RM);
-    if (err != VI_SUCCESS) {
-        return -1;
-    }
-
-
-    err = viOpen(RM, "TCPIP0::169.254.101.106::inst0::INSTR", VI_NULL, VI_NULL, &viDelayGenerator);
-    if (err != VI_SUCCESS) {
-        error_handler(viDelayGenerator, err, errorMessage);
-        return -2;
-    }
 
                                                     /*********************/
                                                     /* CONFIGURING BOARD */
@@ -471,7 +460,6 @@ int alazarCapture( int preTriggerSamples,
     *returnI = 0;
     *returnQ = 0;
 
-    do_command(viDelayGenerator, "*TRG", errorMessage);
 
     // Wait for each buffer to be filled, process the buffer, and re-post it to
     // the board.
@@ -654,8 +642,6 @@ int alazarCapture( int preTriggerSamples,
     if (fpDataIQ != NULL)
         fclose(fpDataIQ);
 
-    viClose(viDelayGenerator);
-    viClose(RM);
 
     free(rawCos);
     free(rawData);
